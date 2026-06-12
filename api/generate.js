@@ -6,10 +6,12 @@
 export const config = { maxDuration: 60 };
 
 // Op volgorde geprobeerd tot er één een plaatje teruggeeft.
+// Goedkoop (Flash) eerst; de duurdere Pro alleen als terugval.
 const MODELS = [
-  "nano-banana-pro-preview",
   "gemini-2.5-flash-image",
+  "gemini-2.5-flash-image-preview",
   "gemini-2.5-flash-preview-05-20",
+  "nano-banana-pro-preview",
   "gemini-2.0-flash-exp",
 ];
 
