@@ -19,13 +19,22 @@ const VEILIG_PREFIX =
   "geschikt voor een kind van 10 jaar. Geen enge, gewelddadige, bloederige of ongepaste " +
   "beelden, geen tekst in het plaatje. Onderwerp: ";
 
+// Strip een eventuele BOM (U+FEFF) en omringende whitespace. Env-vars die via een
+// pipe gezet worden kunnen een onzichtbaar BOM-teken vooraan krijgen; dat sloopt de
+// x-goog-api-key header (HTTP headers mogen alleen Latin-1 bevatten).
+function schoneKey(raw) {
+  let k = raw || "";
+  if (k.charCodeAt(0) === 0xfeff) k = k.slice(1); // leidende BOM
+  return k.trim();
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Gebruik POST." });
     return;
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = schoneKey(process.env.GEMINI_API_KEY);
   if (!apiKey) {
     res.status(500).json({
       error: "De tovermachine is nog niet ingesteld (GEMINI_API_KEY ontbreekt in Vercel).",
@@ -72,7 +81,8 @@ export default async function handler(req, res) {
       });
 
       if (!resp.ok) {
-        laatsteFout = model + " → HTTP " + resp.status;
+        const tekst = await resp.text().catch(() => "");
+        laatsteFout = model + " → HTTP " + resp.status + " " + tekst.slice(0, 200);
         continue; // volgend model proberen
       }
 
