@@ -3,6 +3,10 @@
 // Patroon (model-fallbacklijst) overgenomen uit de bestaande, werkende
 // linkedin-automation/pipeline/agents/book_cover_agent.py.
 
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+
 export const config = { maxDuration: 60 };
 
 // Op volgorde geprobeerd tot er één een plaatje teruggeeft.
@@ -14,6 +18,10 @@ const MODELS = [
   "nano-banana-pro-preview",
   "gemini-2.0-flash-exp",
 ];
+
+// Kostenrem: max plaatjes per dag (instelbaar via env var, standaard 50 ≈ €1,75/dag bij Flash).
+const MAX_PER_DAG = Number(String(process.env.MAX_PER_DAG || "").replace(/[^0-9]/g, "")) || 50;
+const TELLER_PAD = join(tmpdir(), "tovermachine-teller.json");
 
 // Houd het kindvriendelijk en veilig, ongeacht wat Usman intypt.
 const VEILIG_PREFIX =
@@ -30,6 +38,44 @@ function schoneKey(raw) {
   return k.trim();
 }
 
+// --- Dagteller (kostenrem) ------------------------------------------------
+// Best-effort: bewaard in /tmp van de serverless-instance + een module-cache.
+// Reset automatisch bij een nieuwe dag (tijdzone Amsterdam).
+let cache = null; // { date, count }
+
+function vandaagNL() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Amsterdam" }).format(new Date());
+}
+
+function leesTeller() {
+  const dag = vandaagNL();
+  if (cache && cache.date === dag) return cache;
+  try {
+    const data = JSON.parse(readFileSync(TELLER_PAD, "utf8"));
+    if (data && data.date === dag && typeof data.count === "number") {
+      cache = data;
+      return cache;
+    }
+  } catch {
+    /* geen bestand, of van een vorige dag → opnieuw beginnen */
+  }
+  cache = { date: dag, count: 0 };
+  return cache;
+}
+
+function verhoogTeller() {
+  const t = leesTeller();
+  t.count += 1;
+  cache = t;
+  try {
+    writeFileSync(TELLER_PAD, JSON.stringify(t));
+  } catch {
+    /* best-effort; module-cache houdt het anders bij */
+  }
+  return t;
+}
+// --------------------------------------------------------------------------
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Gebruik POST." });
@@ -40,6 +86,19 @@ export default async function handler(req, res) {
   if (!apiKey) {
     res.status(500).json({
       error: "De tovermachine is nog niet ingesteld (GEMINI_API_KEY ontbreekt in Vercel).",
+    });
+    return;
+  }
+
+  // Kostenrem: niet meer dan MAX_PER_DAG plaatjes per dag.
+  const teller = leesTeller();
+  if (teller.count >= MAX_PER_DAG) {
+    res.status(429).json({
+      error:
+        "De tovermachine heeft vandaag al " +
+        MAX_PER_DAG +
+        " plaatjes gemaakt en gaat nu even slapen. 🍌 Kom morgen terug voor meer!",
+      limietBereikt: true,
     });
     return;
   }
@@ -98,10 +157,13 @@ export default async function handler(req, res) {
       for (const part of parts) {
         const inline = part.inlineData || part.inline_data;
         if (inline && inline.data) {
+          const t = verhoogTeller(); // alleen tellen bij een gelukt plaatje
           res.status(200).json({
             image: inline.data, // base64
             mimeType: inline.mimeType || inline.mime_type || "image/png",
             model: model,
+            vandaag: t.count,
+            maxPerDag: MAX_PER_DAG,
           });
           return;
         }
