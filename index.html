@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Usman's Foto-Tovermachine 🍌</title>
+<style>
+  :root {
+    --geel: #ffd83d;
+    --geel-diep: #f7b500;
+    --paars: #6c4cff;
+    --paars-diep: #4b2fd6;
+    --roze: #ff6fb5;
+    --inkt: #2a2150;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Comic Sans MS", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    color: var(--inkt);
+    min-height: 100vh;
+    background: radial-gradient(1200px 600px at 50% -10%, #fff3b0 0%, transparent 60%),
+                linear-gradient(160deg, #a78bfa 0%, #8b5cf6 40%, #ff8fc7 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 14px 60px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: clamp(28px, 7vw, 52px);
+    margin: 10px 0 2px;
+    color: #fff;
+    text-shadow: 0 3px 0 var(--paars-diep), 0 6px 14px rgba(0,0,0,.25);
+    letter-spacing: .5px;
+  }
+  .subtitel {
+    color: #fff;
+    opacity: .95;
+    font-size: clamp(13px, 3.4vw, 17px);
+    text-align: center;
+    margin: 0 0 18px;
+  }
+
+  .kaart {
+    width: min(640px, 100%);
+    background: #fff;
+    border-radius: 26px;
+    padding: 22px 20px 24px;
+    box-shadow: 0 18px 50px rgba(43,33,80,.30);
+    border: 4px solid #fff;
+  }
+
+  label.vraag {
+    display: block;
+    font-size: clamp(17px, 4.5vw, 22px);
+    font-weight: 700;
+    margin: 0 0 10px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 78px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 18px;
+    padding: 14px 16px;
+    border: 3px solid #e7e2ff;
+    border-radius: 18px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  textarea:focus { border-color: var(--paars); }
+
+  .voorbeelden {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0 6px;
+  }
+  .chip {
+    border: none;
+    cursor: pointer;
+    background: #f0ecff;
+    color: var(--paars-diep);
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 8px 13px;
+    border-radius: 999px;
+    transition: transform .1s, background .15s;
+  }
+  .chip:hover { background: #e3dcff; transform: translateY(-1px); }
+  .chip:active { transform: translateY(1px); }
+
+  .maak-knop {
+    margin-top: 16px;
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: clamp(20px, 5.5vw, 26px);
+    color: var(--inkt);
+    background: linear-gradient(180deg, var(--geel) 0%, var(--geel-diep) 100%);
+    padding: 16px 20px;
+    border-radius: 20px;
+    box-shadow: 0 8px 0 #d59a00, 0 12px 22px rgba(0,0,0,.18);
+    transition: transform .08s, box-shadow .08s, filter .15s;
+  }
+  .maak-knop:hover { filter: brightness(1.03); }
+  .maak-knop:active { transform: translateY(5px); box-shadow: 0 3px 0 #d59a00, 0 6px 12px rgba(0,0,0,.18); }
+  .maak-knop:disabled { cursor: not-allowed; filter: grayscale(.4) brightness(.97); transform: none; box-shadow: 0 8px 0 #d59a00; }
+
+  /* Toneel: laad-animatie + resultaat */
+  .toneel { margin-top: 18px; text-align: center; }
+
+  .banaan {
+    font-size: 60px;
+    display: inline-block;
+    animation: dans 1s ease-in-out infinite;
+  }
+  @keyframes dans {
+    0%, 100% { transform: translateY(0) rotate(-8deg); }
+    50%      { transform: translateY(-14px) rotate(8deg); }
+  }
+  .laadtekst { font-weight: 700; margin-top: 6px; color: var(--paars-diep); }
+
+  .resultaat-wrap { display: none; }
+  .resultaat-wrap img {
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(43,33,80,.28);
+    border: 4px solid #fff;
+    background: #f3f0ff;
+  }
+
+  .acties {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .acties a, .acties button {
+    flex: 1 1 140px;
+    text-align: center;
+    text-decoration: none;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 17px;
+    padding: 13px 14px;
+    border-radius: 16px;
+    cursor: pointer;
+    border: none;
+  }
+  .download { background: var(--paars); color: #fff; }
+  .opnieuw  { background: #f0ecff; color: var(--paars-diep); }
+
+  .fout {
+    display: none;
+    margin-top: 14px;
+    background: #ffe3ee;
+    color: #b01055;
+    border: 2px solid #ffb8d4;
+    border-radius: 16px;
+    padding: 12px 14px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .voet {
+    margin-top: 22px;
+    color: #fff;
+    opacity: .9;
+    font-size: 13px;
+    text-align: center;
+  }
+  .voet b { color: var(--geel); }
+</style>
+</head>
+<body>
+  <h1>Usman's Foto-Tovermachine 🍌</h1>
+  <p class="subtitel">Typ wat je wilt zien en de tovermachine maakt het plaatje!</p>
+
+  <div class="kaart">
+    <label class="vraag" for="prompt">Wat wil je zien?</label>
+    <textarea id="prompt" placeholder="bijv. een blauwe draak op een skateboard in de ruimte"></textarea>
+
+    <div class="voorbeelden" id="voorbeelden">
+      <button class="chip">een draak op een skateboard</button>
+      <button class="chip">een kat als astronaut</button>
+      <button class="chip">een robot die voetbalt</button>
+      <button class="chip">een kasteel van snoep</button>
+      <button class="chip">een dinosaurus met een feesthoed</button>
+    </div>
+
+    <button class="maak-knop" id="maak">✨ Maak! ✨</button>
+
+    <div class="toneel">
+      <div class="laden" id="laden" style="display:none;">
+        <div class="banaan">🍌</div>
+        <div class="laadtekst">De tovermachine tekent... eventjes geduld!</div>
+      </div>
+
+      <div class="resultaat-wrap" id="resultaat">
+        <img id="plaatje" alt="jouw plaatje" />
+        <div class="acties">
+          <a class="download" id="download" download="mijn-plaatje.png">⬇️ Bewaar plaatje</a>
+          <button class="opnieuw" id="opnieuw">🔁 Nog een keer</button>
+        </div>
+      </div>
+
+      <div class="fout" id="fout"></div>
+    </div>
+  </div>
+
+  <p class="voet">Gemaakt met liefde door oom Abdul &middot; aangedreven door <b>Nano Banana</b> 🍌</p>
+
+<script>
+  const promptEl   = document.getElementById("prompt");
+  const maakBtn    = document.getElementById("maak");
+  const ladenEl    = document.getElementById("laden");
+  const resultaat  = document.getElementById("resultaat");
+  const plaatje    = document.getElementById("plaatje");
+  const downloadEl = document.getElementById("download");
+  const opnieuwBtn = document.getElementById("opnieuw");
+  const foutEl     = document.getElementById("fout");
+
+  // Voorbeeld-knoppen vullen het tekstvak
+  document.getElementById("voorbeelden").addEventListener("click", (e) => {
+    if (e.target.classList.contains("chip")) {
+      promptEl.value = e.target.textContent;
+      promptEl.focus();
+    }
+  });
+
+  opnieuwBtn.addEventListener("click", () => {
+    resultaat.style.display = "none";
+    promptEl.focus();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  maakBtn.addEventListener("click", maak);
+  promptEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) maak();
+  });
+
+  async function maak() {
+    const wens = promptEl.value.trim();
+    foutEl.style.display = "none";
+    resultaat.style.display = "none";
+
+    if (wens.length < 2) {
+      toonFout("Typ eerst wat je wilt zien! 🙂");
+      return;
+    }
+
+    maakBtn.disabled = true;
+    ladenEl.style.display = "block";
+
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: wens }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.image) {
+        toonFout(data.error || "Oeps, de tovermachine hikte even. Probeer het nog een keer!");
+        return;
+      }
+
+      const src = "data:" + (data.mimeType || "image/png") + ";base64," + data.image;
+      plaatje.src = src;
+      downloadEl.href = src;
+      resultaat.style.display = "block";
+      resultaat.scrollIntoView({ behavior: "smooth", block: "center" });
+    } catch (err) {
+      toonFout("Geen verbinding met de tovermachine. Check je internet en probeer opnieuw.");
+    } finally {
+      ladenEl.style.display = "none";
+      maakBtn.disabled = false;
+    }
+  }
+
+  function toonFout(tekst) {
+    foutEl.textContent = tekst;
+    foutEl.style.display = "block";
+  }
+</script>
+</body>
+</html>
