@@ -23,11 +23,13 @@ const MODELS = [
 const MAX_PER_DAG = Number(String(process.env.MAX_PER_DAG || "").replace(/[^0-9]/g, "")) || 50;
 const TELLER_PAD = join(tmpdir(), "tovermachine-teller.json");
 
-// Houd het kindvriendelijk en veilig, ongeacht wat Usman intypt.
+// Mik op een echte, fotorealistische foto (geen cartoon/tekenstijl), maar houd
+// de inhoud veilig en geschikt voor jongeren, ongeacht wat Usman intypt.
 const VEILIG_PREFIX =
-  "Maak een vrolijk, kleurrijk plaatje in een vriendelijke cartoon- of illustratiestijl, " +
-  "geschikt voor een kind van 10 jaar. Geen enge, gewelddadige, bloederige of ongepaste " +
-  "beelden, geen tekst in het plaatje. Onderwerp: ";
+  "Maak een realistische, fotorealistische foto: gemaakt alsof met een echte camera, " +
+  "met natuurlijk licht, scherpe details en echte texturen. Geen cartoon-, tekenfilm- of " +
+  "illustratiestijl. Houd het netjes en geschikt voor jongeren: geen enge, gewelddadige, " +
+  "bloederige of ongepaste beelden, en geen tekst in het plaatje. Onderwerp: ";
 
 // Strip een eventuele BOM (U+FEFF) en omringende whitespace. Env-vars die via een
 // pipe gezet worden kunnen een onzichtbaar BOM-teken vooraan krijgen; dat sloopt de
